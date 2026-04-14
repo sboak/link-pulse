@@ -21,12 +21,15 @@ app.use("/api/shorten", shortenRouter);
 app.use("/api/stats", statsRouter);
 app.use("/api/links", linksRouter);
 
-// SPA fallback: if the path looks like a short code, try redirect;
-// otherwise serve index.html for client-side routing
-app.get("/:code([a-zA-Z0-9_-]{6,12})", redirectRouter);
+app.get("/:code", (req, res, next) => {
+  const code = req.params.code as string;
+  if (/^[a-zA-Z0-9_-]{6,12}$/.test(code)) {
+    return redirectRouter(req, res, next);
+  }
+  next();
+});
 
-// catch-all: serve index.html for any other route (SPA)
-app.get("*", (_req, res) => {
+app.get("*path", (_req, res) => {
   res.sendFile(path.join(__dirname, "..", "public", "index.html"));
 });
 
